@@ -576,6 +576,14 @@ a:focus-visible {
 	border-top: 2px solid var(--teal);
 }
 
+.project-upcoming {
+	border-style: dashed;
+}
+
+.project-upcoming .project-topline {
+	color: var(--coral);
+}
+
 .project-topline {
 	justify-content: space-between;
 	gap: 12px;
@@ -888,10 +896,6 @@ a:focus-visible {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
-	.project-card:last-child {
-		grid-column: 1 / -1;
-		min-height: 340px;
-	}
 }
 
 @media (max-width: 680px) {
@@ -1076,8 +1080,7 @@ a:focus-visible {
 		grid-template-columns: 1fr;
 	}
 
-	.project-card,
-	.project-card:last-child {
+	.project-card {
 		min-height: 0;
 		grid-column: auto;
 		padding-inline: 18px;
