@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+	<channel>
+		<title>Field Notes on Petroleum Data &amp; SQL</title>
+		<link>https://abdirahmansiyad.github.io/blog/</link>
+		<description>Practical notes on petroleum data, SQL, production surveillance, data quality, and engineering analytics.</description>
+		<language>en</language>
+		<lastBuildDate>Wed, 25 Nov 2026 12:00:00 GMT</lastBuildDate>
+		<item>
+			<title>Somalia’s Curad-1 well: what we know and what remains unknown</title>
+			<link>https://abdirahmansiyad.github.io/blog/posts/somalia-curad-1-what-we-know.html</link>
+			<guid isPermaLink="true">https://abdirahmansiyad.github.io/blog/posts/somalia-curad-1-what-we-know.html</guid>
+			<description>A source-led update on reported drilling progress, exploration indicators, and why they are not the same as a commercial discovery.</description>
+			<pubDate>Wed, 25 Nov 2026 12:00:00 GMT</pubDate>
+		</item>
+		<item>
+			<title>A practical SQL checklist for production data quality</title>
+			<link>https://abdirahmansiyad.github.io/blog/posts/sql-production-data-quality.html</link>
+			<guid isPermaLink="true">https://abdirahmansiyad.github.io/blog/posts/sql-production-data-quality.html</guid>
+			<description>Check identifiers, duplicate well-days, business rules, and reporting gaps before analyzing production records.</description>
+			<pubDate>Wed, 25 Nov 2026 12:00:00 GMT</pubDate>
+		</item>
+		<item>
+			<title>Grouping candidate shut-in periods with SQL</title>
+			<link>https://abdirahmansiyad.github.io/blog/posts/grouping-shut-in-events-with-sql.html</link>
+			<guid isPermaLink="true">https://abdirahmansiyad.github.io/blog/posts/grouping-shut-in-events-with-sql.html</guid>
+			<description>An illustrative MySQL 8 window-function pattern for grouping explicit daily status records into candidate intervals.</description>
+			<pubDate>Wed, 25 Nov 2026 12:00:00 GMT</pubDate>
+		</item>
+		<item>
+			<title>How to present a petroleum data project</title>
+			<link>https://abdirahmansiyad.github.io/blog/posts/petroleum-engineering-data-portfolio.html</link>
+			<guid isPermaLink="true">https://abdirahmansiyad.github.io/blog/posts/petroleum-engineering-data-portfolio.html</guid>
+			<description>A practical structure for explaining the engineering question, data, method, evidence, and limitations in a project portfolio.</description>
+			<pubDate>Wed, 25 Nov 2026 12:00:00 GMT</pubDate>
+		</item>
+		<item>
+			<title>A simple medallion warehouse for engineering data</title>
+			<link>https://abdirahmansiyad.github.io/blog/posts/medallion-warehouse-for-engineering-data.html</link>
+			<guid isPermaLink="true">https://abdirahmansiyad.github.io/blog/posts/medallion-warehouse-for-engineering-data.html</guid>
+			<description>Separate source fidelity from cleanup and reporting with traceable data transformations.</description>
+			<pubDate>Wed, 25 Nov 2026 12:00:00 GMT</pubDate>
+		</item>
+	</channel>
+</rss>

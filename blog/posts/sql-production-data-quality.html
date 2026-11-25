@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>A Practical SQL Checklist for Production Data Quality | Abdirahman Osman Siyad</title>
+	<meta name="description" content="A practical SQL checklist for detecting missing keys, duplicate well-days, invalid measurements, and suspicious gaps before analyzing production data." />
+	<meta name="theme-color" content="#081316" /><meta property="og:type" content="article" /><meta property="og:title" content="A Practical SQL Checklist for Production Data Quality" /><meta property="og:description" content="Check identifiers, duplicates, valid ranges, and missing reporting dates before analyzing production data." /><meta property="og:url" content="https://abdirahmansiyad.github.io/blog/posts/sql-production-data-quality.html" />
+	<link rel="canonical" href="https://abdirahmansiyad.github.io/blog/posts/sql-production-data-quality.html" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" /><link rel="stylesheet" href="../../assets/css/fontawesome-all.min.css" /><link rel="stylesheet" href="../../assets/css/blog.css" />
+</head>
+<body>
+	<header class="journal-header"><div class="journal-shell header-row"><a class="journal-brand" href="../../index.html"><span class="brand-mark">AOS</span><span>FIELD NOTES<small>ENGINEERING / ANALYTICS</small></span></a><nav aria-label="Main navigation"><a href="../../index.html">Portfolio</a><a class="active" href="../">Articles</a><a href="../../index.html#contact">Contact</a></nav></div></header>
+	<main><div class="journal-shell article-top"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Field Notes</a><i class="fas fa-chevron-right" aria-hidden="true"></i><span>SQL / Data quality</span></nav></div>
+		<div class="journal-shell article-layout"><article class="article-main"><header class="article-heading"><div class="article-meta"><span>SQL / DATA QUALITY</span><time datetime="2026-11-25">NOVEMBER 25, 2026</time></div><h1>A practical SQL checklist for production data quality</h1><p class="article-deck">A reliable analysis starts before the chart or model. These checks help surface the data issues most likely to distort a well-level production view.</p><div class="author-line"><span class="author-stamp">AOS</span><span><strong>Abdirahman Osman Siyad</strong>Petroleum Engineer &amp; Data Analyst · 6 min read</span></div></header>
+			<div class="article-body"><p>Production records can look tidy while still hiding duplicate reporting days, incomplete identifiers, or measurements that violate the rules of the source system. A few repeatable checks in SQL make these issues visible before they reach a dashboard.</p><p>The examples below assume a table called <code>daily_production</code> with a well identifier, a reporting date, and three measured volumes. Replace the table and column names with your own, and confirm the source definitions and units first.</p>
+			<h2>1. Agree on the record grain</h2><p>Write down what one row is supposed to represent. For this example, the intended grain is <strong>one record per well per reporting date</strong>. If a well can have multiple streams, facilities, or tests on the same date, include that dimension in the grain instead of treating valid records as duplicates.</p>
+			<h2>2. Find missing identifiers and dates</h2><pre><code>SELECT *
+FROM daily_production
+WHERE well_id IS NULL
+   OR production_date IS NULL;</code></pre><p>These are often unusable for time-series analysis because the record cannot be assigned confidently to a well-day. Don’t automatically discard them; first find out whether the source has a correction path or a separate identifier field.</p>
+			<h2>3. Check uniqueness at the agreed grain</h2><pre><code>SELECT well_id, production_date, COUNT(*) AS row_count
+FROM daily_production
+GROUP BY well_id, production_date
+HAVING COUNT(*) &gt; 1
+ORDER BY row_count DESC, well_id, production_date;</code></pre><p>This query flags duplicate keys for the example grain. A duplicate may be a load issue, a legitimate split record, or evidence that the grain was defined too narrowly. Investigate before choosing a rule to combine rows.</p>
+			<h2>4. Test business rules, not guesses</h2><p>If the source contract says reported volumes cannot be negative, test that rule explicitly:</p><pre><code>SELECT *
+FROM daily_production
+WHERE oil_volume &lt; 0
+   OR water_volume &lt; 0
+   OR gas_volume &lt; 0;</code></pre><p>This is only appropriate if those columns are defined as non-negative reported volumes. Adjust the test for the actual meaning of each field; a negative value might be a valid adjustment in some systems. Also distinguish a zero from <code>NULL</code>: zero is a recorded value, while <code>NULL</code> means the value is absent or unknown.</p>
+			<h2>5. Look for missing reporting dates</h2><p>A missing date is not automatically a shut-in. First establish which wells should report on which days, and decide how to represent non-reporting days. Then compare expected well-date combinations with observed records. Keep an explicit status such as “not reported” separate from measured zero production.</p>
+			<h2>6. Keep checks repeatable</h2><p>For each check, record the rule, the number of records flagged, the data period, and whether someone reviewed the exceptions. A practical sequence is:</p><ol><li>Confirm source definitions, units, and row grain.</li><li>Run required-field and uniqueness checks.</li><li>Check allowed ranges and valid status values.</li><li>Compare observed dates with the expected reporting calendar.</li><li>Review flagged records with someone who understands the source.</li></ol><p>These queries do not prove that the data is correct. They make assumptions testable and exceptions visible, which is a much stronger place to begin analysis.</p>
+			<div class="article-note"><strong>Important:</strong> The SQL here is illustrative. Validate column definitions, units, reporting rules, and database behavior against the actual source before using it operationally.</div>
+			<div class="article-end"><a href="../"><i class="fas fa-arrow-left" aria-hidden="true"></i> All articles</a><a href="grouping-shut-in-events-with-sql.html">Next article <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div></div></article>
+			<aside class="article-aside" aria-label="Article details"><div class="aside-block"><h2>IN THIS ARTICLE</h2><p>Record grain<br />Missing fields<br />Duplicate keys<br />Business rules<br />Reporting gaps</p></div><div class="aside-block"><h2>RELATED WORK</h2><a href="https://github.com/AbdirahmanSiyad/SQL-Petroleum-surveillance-completion" target="_blank" rel="noopener noreferrer">Petroleum SQL project <i class="fas fa-external-link-alt" aria-hidden="true"></i></a></div></aside>
+		</div>
+	</main>
+	<footer class="journal-footer"><div class="journal-shell footer-row"><a class="journal-brand" href="../../index.html"><span class="brand-mark">AOS</span><span>FIELD NOTES<small>ENGINEERING / ANALYTICS</small></span></a><p>© 2026 Abdirahman Osman Siyad</p><a href="../">All articles <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div></footer>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Grouping Candidate Shut-In Periods with SQL | Abdirahman Osman Siyad</title>
+	<meta name="description" content="Learn a MySQL 8 gaps-and-islands pattern for grouping consecutive, explicitly labelled shut-in days for first-pass production surveillance." />
+	<meta name="theme-color" content="#081316" /><meta property="og:type" content="article" /><meta property="og:title" content="Grouping Candidate Shut-In Periods with SQL" /><meta property="og:description" content="An illustrative MySQL 8 window-function pattern for grouping consecutive shut-in status days." /><meta property="og:url" content="https://abdirahmansiyad.github.io/blog/posts/grouping-shut-in-events-with-sql.html" />
+	<link rel="canonical" href="https://abdirahmansiyad.github.io/blog/posts/grouping-shut-in-events-with-sql.html" /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" /><link rel="stylesheet" href="../../assets/css/fontawesome-all.min.css" /><link rel="stylesheet" href="../../assets/css/blog.css" />
+</head>
+<body>
+	<header class="journal-header"><div class="journal-shell header-row"><a class="journal-brand" href="../../index.html"><span class="brand-mark">AOS</span><span>FIELD NOTES<small>ENGINEERING / ANALYTICS</small></span></a><nav aria-label="Main navigation"><a href="../../index.html">Portfolio</a><a class="active" href="../">Articles</a><a href="../../index.html#contact">Contact</a></nav></div></header>
+	<main><div class="journal-shell article-top"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="../">Field Notes</a><i class="fas fa-chevron-right" aria-hidden="true"></i><span>SQL / Surveillance</span></nav></div>
+		<div class="journal-shell article-layout"><article class="article-main"><header class="article-heading"><div class="article-meta"><span>SQL / SURVEILLANCE</span><time datetime="2026-11-25">NOVEMBER 25, 2026</time></div><h1>Grouping candidate shut-in periods with SQL</h1><p class="article-deck">A gaps-and-islands pattern can turn daily status rows into candidate continuous events. The key is to group explicit status data, not infer an event from a convenient zero.</p><div class="author-line"><span class="author-stamp">AOS</span><span><strong>Abdirahman Osman Siyad</strong>Petroleum Engineer &amp; Data Analyst · 7 min read</span></div></header>
+			<div class="article-body"><p>Daily operational tables are easier to inspect when consecutive status days are summarized into one interval. In MySQL 8, a window function can assign each qualifying date a row number. Subtracting that row number from the date creates a shared key for consecutive days.</p><p>This example assumes a table with one row per well per calendar date and an explicit <code>operating_status</code> value. The permitted status values and their meaning must come from the source system, not from assumptions made in a query.</p>
+			<h2>Start with explicit status</h2><p>Suppose the source marks days as <code>SHUT_IN</code> or another operational status. First select only the explicit shut-in rows and collapse any accidental duplicate well-date entries. If duplicates have different statuses, resolve that data-quality problem before grouping.</p>
+			<h2>Number the dates, then identify islands</h2><pre><code>WITH shut_in_days AS (
+    SELECT well_id, production_date
+    FROM daily_status
+    WHERE operating_status = 'SHUT_IN'
+    GROUP BY well_id, production_date
+), numbered_days AS (
+    SELECT
+        well_id,
+        production_date,
+        ROW_NUMBER() OVER (
+            PARTITION BY well_id
+            ORDER BY production_date
+        ) AS day_number
+    FROM shut_in_days
+), islands AS (
+    SELECT
+        well_id,
+        production_date,
+        DATE_SUB(production_date, INTERVAL day_number DAY) AS island_key
+    FROM numbered_days
+)
+SELECT
+    well_id,
+    MIN(production_date) AS candidate_start,
+    MAX(production_date) AS candidate_end,
+    COUNT(*) AS consecutive_status_days
+FROM islands
+GROUP BY well_id, island_key
+ORDER BY well_id, candidate_start;</code></pre><p>For consecutive calendar dates, the date and row number advance together, so <code>DATE_SUB(date, INTERVAL row_number DAY)</code> stays constant. A gap changes that key and starts a new group. The result is a list of contiguous intervals, not a diagnosis of why the well was shut in.</p>
+			<h2>Validate the boundaries</h2><p>Before relying on the output, check the source grain, timezone or date convention, and status history. Inspect sample wells that cover a continuous run, a one-day gap, a duplicate date, and a status change. Compare the grouped dates back to the original records.</p><ul><li>If the status is inferred from volume, define the threshold and its units with an engineer first.</li><li>If the data has missing dates, decide whether a gap breaks the interval; this query treats it as a break.</li><li>If events must be separated by a minimum duration, add that as a documented screening rule after grouping.</li></ul>
+			<h2>What this does not establish</h2><p>Grouping status rows is a data-preparation step. It does not show that a pressure build-up is suitable for analysis, establish a pressure response, or replace pressure-transient interpretation. Any later engineering workflow needs the relevant measurements, metadata, units, quality controls, and review.</p><div class="article-note"><strong>Scope:</strong> This pattern is for first-pass event grouping using explicit daily status. It is not a full PTA workflow and is not a substitute for validating field definitions and candidate events.</div>
+			<p>When the rules are explicit, window functions make the grouping reproducible and easy to audit. That is a useful outcome on its own: a reviewer can see exactly which dates formed each candidate interval and why.</p>
+			<div class="article-end"><a href="sql-production-data-quality.html"><i class="fas fa-arrow-left" aria-hidden="true"></i> Previous article</a><a href="petroleum-engineering-data-portfolio.html">Next article <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div></div></article>
+            <aside class="article-aside" aria-label="Article details"><div class="aside-block"><h2>IN THIS ARTICLE</h2><p>Gaps and islands<br />MySQL 8 window functions<br />Boundary checks<br />Screening limits</p></div><div class="aside-block"><h2>RELATED WORK</h2><a href="https://github.com/AbdirahmanSiyad/SQL-Petroleum-surveillance-completion" target="_blank" rel="noopener noreferrer">Production surveillance SQL <i class="fas fa-external-link-alt" aria-hidden="true"></i></a></div></aside>
+		</div>
+	</main>
+	<footer class="journal-footer"><div class="journal-shell footer-row"><a class="journal-brand" href="../../index.html"><span class="brand-mark">AOS</span><span>FIELD NOTES<small>ENGINEERING / ANALYTICS</small></span></a><p>© 2026 Abdirahman Osman Siyad</p><a href="../">All articles <i class="fas fa-arrow-right" aria-hidden="true"></i></a></div></footer>
+</body>
+</html>
