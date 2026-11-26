@@ -127,6 +127,34 @@ a:focus-visible {
 	color: var(--teal);
 }
 
+.language-select {
+	min-height: 36px;
+	padding: 0 28px 0 10px;
+	border: 1px solid var(--line);
+	border-radius: 2px;
+	background: var(--ink-soft);
+	color: var(--text);
+	font: inherit;
+	font-size: 11px;
+}
+
+.language-select:focus-visible {
+	outline: 2px solid var(--lime);
+	outline-offset: 3px;
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .site-nav .nav-contact {
 	padding: 9px 12px;
 	border: 1px solid var(--line);
@@ -933,6 +961,15 @@ a:focus-visible {
 	.site-nav a {
 		padding: 12px 0;
 		border-bottom: 1px solid rgba(41, 69, 74, .55);
+	}
+
+	.language-control {
+		padding: 8px 0;
+		border-bottom: 1px solid rgba(41, 69, 74, .55);
+	}
+
+	.language-select {
+		width: 100%;
 	}
 
 	.site-nav .nav-contact {
